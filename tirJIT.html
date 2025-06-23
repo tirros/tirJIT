@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>tirJIT Loader</title>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: white;
+      font-family: sans-serif;
+    }
+    iframe {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+    .error-dialog {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #c00;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      padding: 20px;
+      box-sizing: border-box;
+      z-index: 9999;
+    }
+    .error-dialog h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    .error-dialog pre {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      border-radius: 4px;
+      max-width: 90%;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    function showError(reason) {
+      // Remove all iframes
+      document.querySelectorAll("iframe").forEach(e => e.remove());
+
+      // Create error dialog
+      const div = document.createElement("div");
+      div.className = "error-dialog";
+      div.innerHTML = `
+        <h1>tirJIT has failed</h1>
+        <pre>${reason}</pre>
+      `;
+      document.body.appendChild(div);
+    }
+
+    async function loadConfig() {
+      const res = await fetch('/config.json');
+      if (!res.ok) throw new Error(`Failed to load config.json: ${res.status}`);
+      return await res.json();
+    }
+
+    async function loadZip(zipUrl) {
+      const res = await fetch(zipUrl);
+      if (!res.ok) throw new Error(`Failed to load zip: ${res.status}`);
+      const blob = await res.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+      return await JSZip.loadAsync(arrayBuffer);
+    }
+
+    function xorObfuscate(buffer, key = 0x55) {
+      const uint8 = new Uint8Array(buffer);
+      for (let i = 0; i < uint8.length; i++) {
+        uint8[i] ^= key;
+      }
+      return uint8;
+    }
+
+    function detectMime(path) {
+      if (path.endsWith('.html')) return 'text/html';
+      if (path.endsWith('.js')) return 'application/javascript';
+      if (path.endsWith('.css')) return 'text/css';
+      if (path.endsWith('.png')) return 'image/png';
+      if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
+      return 'application/octet-stream';
+    }
+
+    function rewriteLinks(html, files) {
+      return html.replace(/(src|href)="([^"]+)"/g, (match, attr, path) => {
+        if (files[path]) {
+          return `${attr}="${files[path]}"`;
+        }
+        return match;
+      });
+    }
+
+    async function buildBlobUrl(zip, main = "index.html") {
+      const files = {};
+
+      await Promise.all(Object.keys(zip.files).map(async path => {
+        const file = zip.files[path];
+        if (!file.dir) {
+          const data = await file.async("arraybuffer");
+          const obfuscated = xorObfuscate(data);
+          const blob = new Blob([obfuscated], { type: detectMime(path) });
+          files[path] = URL.createObjectURL(blob);
+        }
+      }));
+
+      const mainHtml = await zip.files[main].async("string");
+      const modifiedHtml = rewriteLinks(mainHtml, files);
+      const mainBlob = new Blob([modifiedHtml], { type: "text/html" });
+      return URL.createObjectURL(mainBlob);
+    }
+
+    async function main() {
+      try {
+        const config = await loadConfig();
+
+        // Load splash screen
+        const splashUrl = config.splash + location.search;
+        document.body.innerHTML = `<iframe src="${splashUrl}"></iframe>`;
+
+        const zip = await loadZip(config.program);
+        const appUrl = await buildBlobUrl(zip, "index.html");
+
+        setTimeout(() => {
+          const iframe = document.createElement("iframe");
+          iframe.src = appUrl;
+          iframe.sandbox = "allow-scripts allow-forms allow-same-origin";
+          document.body.innerHTML = '';
+          document.body.appendChild(iframe);
+        }, 1500);
+      } catch (err) {
+        console.error(err);
+        showError(err.message || String(err));
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
