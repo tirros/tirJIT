@@ -1,0 +1,30 @@
+# Tirros License (TL v1)
+
+Copyright (c) 2025 Tirros Networks
+
+Permission is hereby granted, free of charge, to any person or organization obtaining a copy of this software and associated documentation files (the “Software”), to use, copy, modify, merge, publish, distribute, sublicense, and/or incorporate the Software into their own applications, subject to the following conditions:
+
+1. **Prohibited Direct Sale**  
+   You may **not** sell or license the Software by itself as a standalone product.
+
+2. **Allowed Integration**  
+   You may incorporate the Software into your own applications, products, or services for commercial or non-commercial use, including mass production and distribution.
+
+3. **Attribution Requirement**  
+   If you distribute the Software, or any derivative work incorporating it, as part of a commercial or mass-produced product, you **must** retain all crediting resources associated with the Software, including textual credits, copyright notices, trademarks, logos, and links back to Tirros Networks. These credits must be clearly visible and unaltered in the distributed product.
+
+4. **Modification Restrictions**  
+   You may **not** modify, remove, or obfuscate the internal logic of the Software in any commercial or mass-produced distribution. This includes any core algorithms, processing logic, or functional behavior.
+
+5. **Obscurification Clause**  
+   Obscurification (code obfuscation or encoding) is permitted **only** if the application that uses this Software compiles or bundles the entire app as a whole product. However, you are strictly prohibited from obscurifying the compiler itself or from unobscurifying, decoding, or reverse-engineering any pre-encoded, pre-compiled, or obscurified parts of the Software’s internal logic.
+
+6. **No Copyleft / Source Disclosure**  
+   There is no requirement to disclose source code or modifications.
+
+7. **Disclaimer**  
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+---
+
+**SPDX-License-Identifier:** TL-1.0
